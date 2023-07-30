@@ -101,9 +101,8 @@ app.post('/register', checkNotAuthenticated, async (req, res) => {
             from: 'qichen2534@gmail.com',
             to: req.body.email,
             subject: 'Email Verification',
-            html: `
-        <h2>DataLynn</h2>    
-        <h1>Welcome to Your App</h1>
+            html: `    
+        <h1>Welcome to DataLynn</h1>
         <p>Please click the following link to verify your email:</p>
         <a href="http://localhost:3000/verify/${verificationToken}">Verify Email</a>
       `,
