@@ -47,31 +47,39 @@ app.get('/login', checkNotAuthenticated, (req, res) => {
     res.render('login.ejs')
 })
 
-app.post('/login', checkNotAuthenticated, passport.authenticate('local', {
-    successRedirect: '/',
-    failureRedirect: '/login',
-    failureFlash: true
-}))
+// app.post('/login', checkNotAuthenticated, passport.authenticate('local', {
+//     successRedirect: '/',
+//     failureRedirect: '/login',
+//     failureFlash: true
+// }))
+
+app.post('/login', checkNotAuthenticated, async (req, res, next) => {
+    passport.authenticate('local', (err, user, info) => {
+        if (err) {
+            return next(err);
+        }
+        if (!user) {
+            return res.redirect('/login');
+        }
+
+        // Check if the user is verified
+        if (!user.verified) {
+            return res.status(401).send('Please verify your email before logging in.');
+        }
+
+        req.logIn(user, (err) => {
+            if (err) {
+                return next(err);
+            }
+            return res.redirect('/');
+        });
+    })(req, res, next);
+});
+
 
 app.get('/register', checkNotAuthenticated, (req, res) => {
     res.render('register.ejs')
 })
-
-// app.post('/register', checkNotAuthenticated, async (req, res) => {
-//     try {
-//         const hashedPassword = await bcrypt.hash(req.body.password, 10)
-//         users.push({
-//             id: Date.now().toString(),
-//             name: req.body.name,
-//             email: req.body.email,
-//             password: hashedPassword
-//         })
-//         res.redirect('/login')
-//     } catch {
-//         res.redirect('/register')
-//     }
-//     console.log(users)
-// })
 
 const transporter = nodemailer.createTransport({
     // Set up your email transport configuration here (e.g., Gmail, SMTP, etc.)
@@ -85,12 +93,18 @@ const transporter = nodemailer.createTransport({
 
 app.post('/register', checkNotAuthenticated, async (req, res) => {
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
+        const { name, email, password } = req.body;
+        const existingUser = users.find((user) => user.email === email);
+        if (existingUser) {
+            return res.status(400).json({ message: 'Email already registered.' });
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
         const verificationToken = uuid.v4(); // Generate a unique verification token
         users.push({
             id: Date.now().toString(),
-            name: req.body.name,
-            email: req.body.email,
+            name: name,
+            email: email,
             password: hashedPassword,
             verified: false, // Add a 'verified' field to the user object
             verificationToken, // Add the verification token to the user object
