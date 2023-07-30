@@ -54,6 +54,8 @@ app.get('/login', checkNotAuthenticated, (req, res) => {
 // }))
 
 app.post('/login', checkNotAuthenticated, async (req, res, next) => {
+
+    // local strategy
     passport.authenticate('local', (err, user, info) => {
         if (err) {
             return next(err);
@@ -71,6 +73,11 @@ app.post('/login', checkNotAuthenticated, async (req, res, next) => {
             if (err) {
                 return next(err);
             }
+
+            ///////////
+            console.log('test req.user:')
+            console.log(req.user)
+
             return res.redirect('/');
         });
     })(req, res, next);
