@@ -39,6 +39,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(methodOverride('_method'))
 
+// can see only after login
 app.get('/', checkAuthenticated, (req, res) => {
     res.render('index.ejs', { name: req.user.name })
 })
@@ -64,9 +65,16 @@ app.post('/login', checkNotAuthenticated, async (req, res, next) => {
             return res.redirect('/login');
         }
 
-        // Check if the user is verified
         if (!user.verified) {
-            return res.status(401).send('Please verify your email before logging in.');
+            const verificationMessage = 'Please verify your email before logging in.';
+            return res.status(401).send(`
+                <html>
+                <body>
+                    <h2>${verificationMessage}</h2>
+                    <button onclick="window.location.href='/login'">Return to Login</button>
+                </body>
+                </html>
+            `);
         }
 
         req.logIn(user, (err) => {
@@ -98,7 +106,7 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-app.post('/register', checkNotAuthenticated, async (req, res) => {
+app.post('/register', async (req, res) => {
     try {
 
         const { name, email, password } = req.body;
