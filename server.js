@@ -102,6 +102,7 @@ app.post('/register', checkNotAuthenticated, async (req, res) => {
             to: req.body.email,
             subject: 'Email Verification',
             html: `
+        <h2>DataLynn</h2>    
         <h1>Welcome to Your App</h1>
         <p>Please click the following link to verify your email:</p>
         <a href="http://localhost:3000/verify/${verificationToken}">Verify Email</a>
@@ -117,7 +118,7 @@ app.post('/register', checkNotAuthenticated, async (req, res) => {
         });
 
         res.redirect('/login');
-    } catch(error) {
+    } catch (error) {
         res.redirect('/register');
     }
     console.log(users);
@@ -141,7 +142,7 @@ app.get('/verify/:token', async (req, res) => {
         delete user.verificationToken;
         console.log(user)
 
-        res.send('Email verified successfully.');
+        res.send('Email verified successfully. You can return to login');
     } catch (error) {
         res.status(500).send('Error verifying email.');
     }
